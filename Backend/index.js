@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';  // Import the adapter
 import pg from 'pg';                            // Import the standard PG driver
@@ -7,6 +8,8 @@ import 'dotenv/config';                         // Load environment variables
 const { Pool } = pg;
 const app = express();
 const port = 3000;
+
+app.use(cors());
 
 // 1. Create a PostgreSQL connection pool
 const pool = new Pool({
@@ -36,19 +39,21 @@ app.get('/get_all_video', async (req, res) => {
 
 
 app.post('/add_video', async (req, res) => {
-    const { title, videoUrl, createdAt} = req.body;
+    const { title, videoUrl, videoLink, createdAt} = req.body;
+
+    if (!title || !videoUrl || !videoLink) {
+      return res.status(400).json({ error: "title, videoUrl and videoLink are required" });
+    }
+
     try {
         const video = await prisma.video.create({
             data: {
                 title,
                 videoUrl,
+                videoLink,
                 createdAt: createdAt ? new Date(createdAt) : new Date(),
             },
         });
-
-        if (!title || !videoUrl) {
-          return res.status(400).json({ error: "title and videoUrl are required" });
-        }
 
         res.status(201).json(video);
     } catch (error) {

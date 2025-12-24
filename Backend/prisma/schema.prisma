@@ -15,5 +15,6 @@ model video{
     id        Int      @id @default(autoincrement())
     title     String
     videoUrl  String
+    videoLink String
     createdAt DateTime @default(now())
 }
