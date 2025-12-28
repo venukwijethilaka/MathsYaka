@@ -1,15 +1,20 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';  // Import the adapter
-import pg from 'pg';                            // Import the standard PG driver
-import 'dotenv/config';                         // Load environment variables
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
+import 'dotenv/config';
+
+// Imports for API Key Auth and CORS
+import apiKeyAuth from './src/middleware/apiKeyAuth.js';
+import corsOptions from './src/config/corsOptions.js';
 
 const { Pool } = pg;
 const app = express();
 const port = 3000;
 
-app.use(cors());
+// Use CORS with specific options
+app.use(cors(corsOptions));
 
 // 1. Create a PostgreSQL connection pool
 const pool = new Pool({
@@ -38,7 +43,7 @@ app.get('/get_all_video', async (req, res) => {
 
 
 
-app.post('/add_video', async (req, res) => {
+app.post('/add_video', apiKeyAuth, async (req, res) => {
     const { title, videoUrl, videoLink, createdAt} = req.body;
 
     if (!title || !videoUrl || !videoLink) {
@@ -84,7 +89,7 @@ app.get('/search_video/:title', async (req, res) => {
 });
 
 
-app.delete('/delete/:id', async (req, res) => {
+app.delete('/delete/:id', apiKeyAuth, async (req, res) => {
     const { id } = req.params;
 
     try {
